@@ -2,9 +2,11 @@
 "use client"
 
 import React, { useState } from "react"
+import { useRouter } from "next/navigation"
 import styles from "./styles.module.css"
 
 export default function StaffLogin() {
+	const router = useRouter()
 	const [username, setUsername] = useState("")
 	const [password, setPassword] = useState("")
 	const [error, setError] = useState<string | null>(null)
@@ -29,35 +31,34 @@ export default function StaffLogin() {
 			if (!response.ok) {
 				const message = data?.detail || data?.error || "Wrong username or password."
 				setError(message)
-		        setIsSubmitting(true)
+				setIsSubmitting(false)
+            }
 
-				return
-			}
+            const accessToken = data?.access
+            const refreshToken = data?.refresh
+            
 
-			const accessToken = data?.access
-			const refreshToken = data?.refresh
+            if (!accessToken || !refreshToken) {
+                setError("Login succeeded but tokens were not returned.")
+                return
+            }
 
-			if (!accessToken || !refreshToken) {
-				setError("Login succeeded but tokens were not returned.")
-				return
-			}
-
-			if (typeof window !== "undefined") {
-				window.sessionStorage.setItem("velori_access_token", accessToken)
-				window.sessionStorage.setItem("velori_refresh_token", refreshToken)
-			}
+            if (typeof window !== "undefined") {
+                window.sessionStorage.setItem("velori_access_token", accessToken)
+                window.sessionStorage.setItem("velori_refresh_token", refreshToken)
+            }
 
 			setUsername("")
 			setPassword("")
 			setError(null)
-            // Send to next page
-			alert("Login successful")
+			router.push("/staff")
 		} catch (fetchError) {
 			setError("Unable to connect to the login server. Please check your network.")
 		} finally {
 			setIsSubmitting(false)
 		}
-	}
+    }
+	
 
 	return (
 		<main className={styles.container}>
