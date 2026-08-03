@@ -3,7 +3,10 @@
 
 import React, { useState } from "react"
 import { useRouter } from "next/navigation"
+import Image from "next/image"
 import styles from "./styles.module.css"
+
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000"
 
 export default function StaffLogin() {
 	const router = useRouter()
@@ -18,7 +21,7 @@ export default function StaffLogin() {
 		setIsSubmitting(true)
 
 		try {
-			const response = await fetch("http://127.0.0.1:8000/api/users/login/", {
+			const response = await fetch(`${API_BASE}/api/users/login/`, {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
@@ -32,6 +35,7 @@ export default function StaffLogin() {
 				const message = data?.detail || data?.error || "Wrong username or password."
 				setError(message)
 				setIsSubmitting(false)
+				return
             }
 
             const accessToken = data?.access
@@ -39,13 +43,14 @@ export default function StaffLogin() {
             
 
             if (!accessToken || !refreshToken) {
-                setError("Login succeeded but tokens were not returned.")
+                setError("Incorrect Credentials. Please try again.")
                 return
             }
 
             if (typeof window !== "undefined") {
                 window.sessionStorage.setItem("velori_access_token", accessToken)
                 window.sessionStorage.setItem("velori_refresh_token", refreshToken)
+				window.sessionStorage.setItem("velori_staff_name", username)
             }
 
 			setUsername("")
@@ -53,7 +58,7 @@ export default function StaffLogin() {
 			setError(null)
 			router.push("/staff")
 		} catch (fetchError) {
-			setError("Unable to connect to the login server. Please check your network.")
+			setError("Connection Failed. Please check your network.")
 		} finally {
 			setIsSubmitting(false)
 		}
@@ -63,7 +68,9 @@ export default function StaffLogin() {
 	return (
 		<main className={styles.container}>
 			<div className={styles.cardWrapper}>
-				<div className={styles.brand}>VELORI</div>
+				<div className={styles.brand}>
+					<Image src="/movo-logo.svg" alt="MOVO" width={180} height={44} className={styles.brandLogo} priority />
+				</div>
 
 				<form className={styles.card} onSubmit={handleSubmit} aria-labelledby="login-heading">
 					<h1 id="login-heading" className={styles.title}>Staff Login</h1>
@@ -78,6 +85,7 @@ export default function StaffLogin() {
 							onChange={(e) => setUsername(e.target.value)}
 							required
 							autoComplete="username"
+							disabled={isSubmitting}
 						/>
 					</label>
 
@@ -91,6 +99,7 @@ export default function StaffLogin() {
 							onChange={(e) => setPassword(e.target.value)}
 							required
 							autoComplete="current-password"
+							disabled={isSubmitting}
 						/>
 					</label>
 

@@ -1,0 +1,13 @@
+services:
+  web:
+    build: .
+    user: "0:0"
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - node_modules:/app/node_modules
+    command: sh -c "npm install --include=optional && npm run dev"
+
+volumes:
+  node_modules:

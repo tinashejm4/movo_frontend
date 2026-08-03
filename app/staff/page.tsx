@@ -2,9 +2,18 @@
 
 import React, { useState } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import styles from "./styles.module.css"
 
-const pendingTasks = [
+type Task = {
+  id: string
+  title: string
+  subtitle: string
+  details: string
+  time?: string
+}
+
+const pendingTasks: Task[] = [
   {
     id: "8821",
     title: "Unload Freight #8821",
@@ -28,7 +37,7 @@ const pendingTasks = [
   },
 ]
 
-const upcomingTasks = [
+const upcomingTasks: Task[] = [
   {
     id: "fedex",
     title: "FedEx Pickup - Express",
@@ -56,15 +65,17 @@ const upcomingTasks = [
 ]
 
 export default function StaffDashboard() {
-  const [selectedTask, setSelectedTask] = useState<null | typeof pendingTasks[number]>(null)
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null)
 
-  const openTask = (task: typeof pendingTasks[number]) => setSelectedTask(task)
+  const openTask = (task: Task) => setSelectedTask(task)
   const closeTask = () => setSelectedTask(null)
 
   return (
     <main className={styles.page}>
       <aside className={styles.sidebar}>
-        <div className={styles.logo}>VELORI</div>
+        <div className={styles.logo}>
+          <Image src="/movo-logo.svg" alt="MOVO" width={168} height={40} className={styles.logoImage} priority />
+        </div>
         <p className={styles.subtext}>Reliable & Efficient</p>
 
         <nav className={styles.nav} aria-label="Staff navigation">
@@ -84,9 +95,13 @@ export default function StaffDashboard() {
             <span className={styles.navIcon}>📋</span>
             Batches
           </Link>
-          <Link href="#inventory" className={styles.navItem}>
+          <Link href="/staff/expenses" className={styles.navItem}>
             <span className={styles.navIcon}>🧾</span>
-            Inventory
+            Expenses
+          </Link>
+          <Link href="/staff/accounts" className={styles.navItem}>
+            <span className={styles.navIcon}>🏦</span>
+            Accounts
           </Link>
         </nav>
 

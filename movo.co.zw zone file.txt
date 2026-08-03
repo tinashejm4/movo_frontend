@@ -1,0 +1,23 @@
+$TTL 86400
+@   IN  SOA ns1.webzim.net. admin.movo.co.zw. (
+        2026072901 ; Serial (YYYYMMDDnn — increment when editing)
+        3600       ; Refresh
+        1800       ; Retry
+        1209600    ; Expire
+        86400 )    ; Minimum TTL
+
+; Nameservers
+    IN  NS  ns1.webzim.net.
+    IN  NS  ns2.webzim.net.
+
+; A record for root domain
+@   IN  A   102.133.154.33
+
+; A record for www
+www IN  A   102.133.154.33
+
+; MX record for mail
+@   IN  MX  0 mail.movo.co.zw.
+
+; Mail server A record
+mail IN  A   104.160.240.35

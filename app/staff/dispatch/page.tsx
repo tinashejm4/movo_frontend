@@ -3,6 +3,7 @@
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import styles from './styles.module.css'
 import staffStyles from '../styles.module.css'
 
@@ -230,11 +231,13 @@ export default function DispatchPackage() {
   return (
     <div className={styles.container}>
       <aside className={staffStyles.sidebar}>
-        <div className={staffStyles.logo}>VELORI</div>
+        <div className={staffStyles.logo}>
+          <Image src="/movo-logo.svg" alt="MOVO" width={168} height={40} className={staffStyles.logoImage} priority />
+        </div>
         <p className={staffStyles.subtext}>Reliable & Efficient</p>
 
         <nav className={staffStyles.nav} aria-label="Staff navigation">
-          <Link href="/staff" className={staffStyles.navItem} aria-current="page">
+          <Link href="/staff" className={staffStyles.navItem}>
             <span className={staffStyles.navIcon}>📊</span>
             Dashboard
           </Link>
@@ -242,7 +245,7 @@ export default function DispatchPackage() {
             <span className={staffStyles.navIcon}>📥</span>
             Receiving
           </Link>
-          <Link href="/staff/dispatch" className={staffStyles.navItem}>
+          <Link href="/staff/dispatch" className={staffStyles.navItem} aria-current="page">
             <span className={staffStyles.navIcon}>📦</span>
             Dispatch
           </Link>

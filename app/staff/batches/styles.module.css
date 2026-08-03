@@ -1,306 +1,310 @@
+:root {
+  --bg: #eef5fb;
+  --card: #ffffff;
+  --text: #111827;
+  --muted: #6b7280;
+  --orange: #ff6a00;
+  --orange-soft: #fff4eb;
+  --border: #e5e7eb;
+}
+
+.container {
+  min-height: 100vh;
+  display: flex;
+  gap: 24px;
+  padding: 24px;
+  background: var(--bg);
+}
+
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 2.25rem;
+  color: var(--text);
+}
+
+.subtitle {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--muted);
+}
+
 .mainContent {
   display: grid;
-  grid-template-columns: 1fr 1.5fr;
-  gap: 2rem;
-  margin-top: 2rem;
-  min-height: 600px;
+  grid-template-columns: minmax(320px, 0.95fr) minmax(480px, 1.4fr);
+  gap: 24px;
+  min-height: 640px;
+}
+
+.batchListPanel,
+.detailsPanel {
+  background: var(--card);
+  border-radius: 24px;
+  padding: 24px;
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.08);
+  border: 1px solid rgba(229, 231, 235, 0.9);
 }
 
 .batchListPanel {
-  background: white;
-  border-radius: 8px;
-  padding: 1.5rem;
-  border: 1px solid #e0e0e0;
   display: flex;
   flex-direction: column;
+  gap: 16px;
 }
 
-.batchListPanel h2 {
-  margin-top: 0;
-  margin-bottom: 1rem;
+.panelHeader h2 {
+  margin: 0;
   font-size: 1.2rem;
-  color: #333;
-}
-
-.searchBox {
-  margin-bottom: 1.5rem;
+  color: var(--text);
 }
 
 .searchBox input {
   width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  min-height: 46px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: #f8fafc;
+  color: var(--text);
   font-size: 0.95rem;
 }
 
 .searchBox input:focus {
   outline: none;
-  border-color: #4CAF50;
-  box-shadow: 0 0 5px rgba(76, 175, 80, 0.2);
+  border-color: var(--orange);
+  box-shadow: 0 0 0 4px rgba(255, 106, 0, 0.12);
 }
 
 .batchList {
-  flex: 1;
-  overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 12px;
+  overflow-y: auto;
 }
 
 .batchItem {
-  padding: 1rem;
-  border: 2px solid #eee;
-  border-radius: 6px;
+  text-align: left;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: #f8fafc;
+  padding: 14px;
   cursor: pointer;
-  transition: all 0.3s ease;
-  background: #fafafa;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .batchItem:hover {
-  border-color: #4CAF50;
-  background: #f5f5f5;
-  transform: translateX(4px);
+  transform: translateY(-1px);
+  border-color: var(--orange);
+  box-shadow: 0 12px 24px rgba(255, 106, 0, 0.12);
 }
 
 .batchItem.selected {
-  border-color: #4CAF50;
-  background: #e8f5e9;
-  box-shadow: 0 2px 8px rgba(76, 175, 80, 0.15);
+  background: var(--orange-soft);
+  border-color: var(--orange);
 }
 
 .batchItemHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 0.75rem;
+  gap: 8px;
+  margin-bottom: 8px;
 }
 
 .batchItemHeader strong {
-  font-size: 1rem;
-  color: #333;
+  color: var(--text);
 }
 
 .packageCount {
-  background: #e0e0e0;
-  padding: 0.25rem 0.75rem;
-  border-radius: 12px;
-  font-size: 0.85rem;
-  color: #666;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #eceff4;
+  font-size: 0.8rem;
+  color: var(--muted);
 }
 
 .batchItemDetails {
+  color: var(--muted);
   font-size: 0.9rem;
-  color: #666;
-  margin-bottom: 0.75rem;
-}
-
-.batchItemDetails div {
-  margin: 0.25rem 0;
+  display: grid;
+  gap: 2px;
+  margin-bottom: 10px;
 }
 
 .batchItemStatus {
   display: flex;
-  gap: 0.5rem;
 }
 
-.statusAvailable {
-  background: #c8e6c9;
-  color: #2e7d32;
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
-  font-size: 0.85rem;
-  font-weight: 500;
+.statusAvailable,
+.statusUnavailable,
+.collectedBadge,
+.pendingBadge {
+  border-radius: 999px;
+  padding: 5px 10px;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.statusAvailable,
+.collectedBadge {
+  color: #166534;
+  background: #dcfce7;
 }
 
 .statusUnavailable {
-  background: #ffcccc;
-  color: #c62828;
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
-  font-size: 0.85rem;
-  font-weight: 500;
+  color: #991b1b;
+  background: #fee2e2;
+}
+
+.pendingBadge {
+  color: #9a3412;
+  background: #ffedd5;
 }
 
 .loadingMessage,
-.errorMessage,
-.emptyMessage {
-  padding: 2rem 1rem;
+.emptyMessage,
+.emptyState {
+  color: var(--muted);
   text-align: center;
-  color: #999;
-  font-size: 0.95rem;
 }
 
 .errorMessage {
-  color: #d32f2f;
-  background: #ffebee;
-  border-radius: 4px;
-  padding: 1rem;
-  margin: 1rem 0;
+  border-radius: 16px;
+  padding: 14px;
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+  font-weight: 700;
 }
 
 .detailsPanel {
-  background: white;
-  border-radius: 8px;
-  padding: 1.5rem;
-  border: 1px solid #e0e0e0;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
   overflow-y: auto;
 }
 
 .batchHeader {
-  margin-bottom: 2rem;
-  padding-bottom: 1.5rem;
-  border-bottom: 2px solid #e0e0e0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
-.batchHeader h2 {
-  margin-top: 0;
-  margin-bottom: 1rem;
-  color: #333;
+.batchHeader h2,
+.packagesSection h3 {
+  margin: 0;
+  color: var(--text);
 }
 
 .batchInfo {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 12px;
 }
 
 .infoPair {
-  display: flex;
-  flex-direction: column;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: #f8fafc;
+  padding: 12px;
 }
 
-.infoPair .label {
-  font-weight: 600;
-  color: #666;
-  font-size: 0.9rem;
-  margin-bottom: 0.25rem;
+.label {
+  display: block;
+  color: var(--muted);
+  font-size: 0.8rem;
+  letter-spacing: 0.02em;
 }
 
-.infoPair .value {
-  color: #333;
-  font-size: 1rem;
+.value {
+  color: var(--text);
+  font-weight: 700;
+  margin-top: 4px;
+  display: inline-block;
 }
 
 .packagesSection {
-  margin-top: 2rem;
-}
-
-.packagesSection h3 {
-  margin-top: 0;
-  margin-bottom: 1rem;
-  font-size: 1.1rem;
-  color: #333;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .packagesList {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+  display: grid;
+  gap: 12px;
 }
 
 .packageCard {
-  border: 1px solid #e0e0e0;
-  border-radius: 6px;
-  padding: 1rem;
-  background: #fafafa;
-  transition: all 0.3s ease;
-}
-
-.packageCard:hover {
-  border-color: #4CAF50;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: #f8fafc;
+  padding: 14px;
 }
 
 .packageHeader {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 1rem;
-  padding-bottom: 0.75rem;
-  border-bottom: 1px solid #eee;
+  gap: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 10px;
 }
 
 .packageHeader strong {
-  font-size: 1rem;
-  color: #333;
+  color: var(--text);
 }
 
-.receiverCode {
+.prepackageCode {
   display: block;
-  font-size: 0.85rem;
-  color: #999;
-  margin-top: 0.25rem;
-}
-
-.collectedBadge {
-  background: #c8e6c9;
-  color: #2e7d32;
-  padding: 0.4rem 0.75rem;
-  border-radius: 4px;
-  font-size: 0.85rem;
-  font-weight: 500;
-}
-
-.pendingBadge {
-  background: #fff9c4;
-  color: #f57f17;
-  padding: 0.4rem 0.75rem;
-  border-radius: 4px;
-  font-size: 0.85rem;
-  font-weight: 500;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 0.86rem;
 }
 
 .packageDetails {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
+  display: grid;
+  gap: 8px;
 }
 
 .detailRow {
   display: flex;
   justify-content: space-between;
-  font-size: 0.95rem;
-}
-
-.detailRow .label {
-  font-weight: 600;
-  color: #666;
-  min-width: 100px;
-}
-
-.detailRow span:last-child {
-  color: #333;
+  gap: 16px;
+  font-size: 0.93rem;
+  color: var(--text);
 }
 
 .emptyState {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 400px;
-  color: #999;
-  text-align: center;
-  font-size: 1.1rem;
+  min-height: 280px;
+  display: grid;
+  place-items: center;
 }
 
 @media (max-width: 1200px) {
   .mainContent {
     grid-template-columns: 1fr;
   }
-
-  .batchListPanel {
-    max-height: 400px;
-  }
-
-  .batchInfo {
-    grid-template-columns: 1fr;
-  }
 }
 
-@media (max-width: 768px) {
-  .batchListPanel,
-  .detailsPanel {
-    border-radius: 4px;
-    padding: 1rem;
+@media (max-width: 900px) {
+  .container {
+    flex-direction: column;
+    padding: 18px;
+  }
+
+  .detailRow {
+    flex-direction: column;
+    gap: 2px;
   }
 }

@@ -3,6 +3,7 @@
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import styles from './styles.module.css'
 import staffStyles from '../styles.module.css'
 
@@ -303,7 +304,9 @@ export default function ReceivePackage() {
   return (
     <div className={styles.container}>
       <aside className={staffStyles.sidebar}>
-        <div className={staffStyles.logo}>VELORI</div>
+        <div className={staffStyles.logo}>
+          <Image src="/movo-logo.svg" alt="MOVO" width={168} height={40} className={staffStyles.logoImage} priority />
+        </div>
         <p className={staffStyles.subtext}>Reliable & Efficient</p>
 
         <nav className={staffStyles.nav} aria-label="Staff navigation">
@@ -586,7 +589,7 @@ export default function ReceivePackage() {
               >
                 Back
               </button>
-              <button type="submit" disabled={loading} className={`${styles.button} ${styles.success}`}>
+              <button type="submit" disabled={loading || !payment.is_pay_forward && !cashReceived || !payment.is_pay_forward && paymentRequestStatus === 'success'} className={`${styles.button} ${styles.success}`} >
                 {loading ? 'Finalizing...' : 'Save & Finalize'}
               </button>
             </div>
