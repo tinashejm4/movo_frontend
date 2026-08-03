@@ -75,6 +75,7 @@
   transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
 }
 
+
 .ghostBtn {
   background: transparent;
   border: 1px solid #d7dbe6;
@@ -310,13 +311,23 @@
   gap: 10px;
 }
 
+.heroTracker {
+  margin-top: 20px;
+  max-width: 560px;
+}
+
+.valueBannerTracker {
+  grid-column: 1 / -1;
+  margin-top: 4px;
+}
+
 .lightBtn {
   background: #fff3ec;
   color: #711f00;
 }
 
-.outlineBtn {
-  background: transparent;
+.heroWhatsappBtn {
+  background: #1ea85d;
   border: 1px solid rgba(255, 255, 255, 0.65);
   color: var(--movo-white);
 }
@@ -816,6 +827,10 @@
 @media (max-width: 720px) {
   .hero {
     padding-top: 52px;
+  }
+
+  .heroTracker {
+    max-width: 100%;
   }
 
   .section,

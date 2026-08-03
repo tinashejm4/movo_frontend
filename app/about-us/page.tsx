@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import PackageTracker from "./packageTracker";
 import styles from "./styles.module.css";
 
 export const metadata: Metadata = {
@@ -58,6 +59,7 @@ export default function AboutUsPage() {
             Our mission is to make delivery in Zimbabwe dependable, affordable, and secure by
             combining smart routing, trusted couriers, and clear customer communication.
           </p>
+          <PackageTracker />
         </section>
 
         <section className={styles.section}>

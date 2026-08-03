@@ -3,6 +3,7 @@
 import { useEffect, useState, type FormEvent } from "react"
 import { Manrope, Space_Grotesk } from "next/font/google";
 import Image from "next/image";
+import PackageTracker from "./about-us/packageTracker";
 import styles from "./home.module.css";
 
 const manrope = Manrope({ subsets: ["latin"], weight: ["400", "500", "600", "700", "800"] });
@@ -214,7 +215,7 @@ export default function Home() {
             </p>
             <div className={styles.heroCtas}>
               <button className={styles.lightBtn}>Download the App Now</button>
-              <button type="button" className={styles.outlineBtn} onClick={openWhatsApp}>
+              <button type="button" className={`${styles.heroWhatsappBtn} ${styles.headerWhatsAppBtn}`} onClick={openWhatsApp}>
                 Send on WhatsApp
               </button>
             </div>
@@ -244,6 +245,9 @@ export default function Home() {
                 </svg>
               </span>
               <strong>Fast</strong>
+            </div>
+            <div className={styles.valueBannerTracker}>
+              <PackageTracker />
             </div>
           </aside>
         </section>
