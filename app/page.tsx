@@ -514,14 +514,12 @@ export default function Home() {
         <div>
           <h3>Legal</h3>
           <a href="/terms-of-service">Terms of Service</a>
-          <a href="#">Privacy Policy</a>
-          <a href="#">Cookie Policy</a>
+          <a href="/privacy-policy">Privacy Policy</a>
         </div>
         <div>
           <h3>Support</h3>
-          <a href="#">Contact Support</a>
-          <a href="#">Help Center</a>
-          <a href="#">System Status</a>
+          <a href="mailto:support@movo.co.zw">Contact Support</a>
+          <a href="/help-center">Help Center</a>
         </div>
       </footer>
     </div>

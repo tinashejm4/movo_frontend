@@ -18,13 +18,29 @@ type PackageStatusResponse = {
   delivered_at: string | null;
 };
 
-const TRACKING_API =
-  "https://movobackend01-ccehf3gqbedmg6ax.southafricanorth-01.azurewebsites.net//api/intracity/package-status/";
+const DEFAULT_API_BASE = "https://movobackend01-ccehf3gqbedmg6ax.southafricanorth-01.azurewebsites.net";
+const API_BASE = (process.env.NEXT_PUBLIC_API_BASE_URL ?? DEFAULT_API_BASE).replace(/\/+$/, "");
+const TRACKING_PATHS = ["/api/intracity/package-status/"];
+const TRACKING_QUERY_KEYS = ["package_slug"];
 
 const STATUS_STEPS = ["Pending", "Collected", "In Transit", "Delivered"] as const;
 
 function normalizeStatus(status: string): string {
   return status.trim().toLowerCase();
+}
+
+function getErrorMessage(payload: unknown): string | null {
+  if (!payload || typeof payload !== "object") {
+    return null;
+  }
+
+  const candidate = payload as Record<string, unknown>;
+  const message = candidate.error ?? candidate.detail ?? candidate.message;
+  return typeof message === "string" && message.trim().length > 0 ? message : null;
+}
+
+function isPackageStatusResponse(payload: unknown): payload is PackageStatusResponse {
+  return !!payload && typeof payload === "object" && "status" in payload;
 }
 
 function inferStepIndex(data: PackageStatusResponse): number {
@@ -90,20 +106,58 @@ export default function PackageTracker() {
     setError(null);
 
     try {
-      const url = `${TRACKING_API}?package_slug=${encodeURIComponent(trimmedSlug)}`;
-      const response = await fetch(url, {
-        method: "GET",
-        headers: {
-          Accept: "application/json",
-        },
-      });
+      const searchRequests = TRACKING_PATHS.flatMap((path) =>
+        TRACKING_QUERY_KEYS.map((queryKey) => `${API_BASE}${path}?${queryKey}=${encodeURIComponent(trimmedSlug)}`)
+      );
 
-      if (!response.ok) {
-        throw new Error("Package not found. Check the package code and try again.");
+      let lastError = "Failed to track package. Check the package code and try again.";
+
+      for (const url of searchRequests) {
+        let response: Response;
+        try {
+          response = await fetch(url, {
+            method: "GET",
+            headers: {
+              Accept: "application/json",
+            },
+          });
+        } catch {
+          // Try next candidate endpoint/parameter if the current one is unreachable.
+          continue;
+        }
+
+        console.log("Tracking request to:", url, "Response status:", response.status);
+
+        const payload = await response.json().catch(() => null);
+
+        if (response.ok) {
+          if (isPackageStatusResponse(payload)) {
+            setTrackingData(payload);
+            return;
+          }
+
+          // Some endpoints wrap response body in a data object.
+          if (
+            payload &&
+            typeof payload === "object" &&
+            "data" in payload &&
+            isPackageStatusResponse((payload as { data?: unknown }).data)
+          ) {
+            setTrackingData((payload as { data: PackageStatusResponse }).data);
+            return;
+          }
+
+          lastError = "Unexpected tracking response from server.";
+          continue;
+        }
+
+        const apiError = getErrorMessage(payload);
+        if (apiError) {
+          lastError = apiError;
+        }
       }
 
-      const payload = (await response.json()) as PackageStatusResponse;
-      setTrackingData(payload);
+      throw new Error(lastError);
     } catch (fetchError) {
       setTrackingData(null);
       setError(fetchError instanceof Error ? fetchError.message : "Could not fetch package status.");
