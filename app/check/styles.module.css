@@ -23,6 +23,10 @@
 	justify-content: center;
 }
 
+.detailsWrapper {
+	max-width: 960px;
+}
+
 .brand {
 	line-height: 0;
 	position: absolute;
@@ -206,6 +210,11 @@
 	row-gap: 10px;
 }
 
+.detailsCard > .detailsGrid {
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	column-gap: 32px;
+}
+
 .detailRow {
 	display: flex;
 	justify-content: space-between;
@@ -232,6 +241,27 @@
 	background: #f8fafc;
 	color: #374151;
 	font-size: 0.9rem;
+}
+
+.invoiceSummary {
+	margin: 18px 0;
+	padding: 14px;
+	border: 1px solid #fed7aa;
+	border-radius: 8px;
+	background: #fff7ed;
+}
+
+.invoiceTitle {
+	margin: 0 0 10px;
+	color: #9a3412;
+	font-size: 1rem;
+}
+
+.payerMessage {
+	margin-bottom: 12px;
+	color: #7c2d12;
+	font-size: 0.92rem;
+	font-weight: 700;
 }
 
 .getAppButton {
@@ -274,11 +304,44 @@
 	background: linear-gradient(90deg, var(--orange-dark), var(--orange));
 }
 
+.storeButtons {
+	display: flex;
+	gap: 10px;
+	margin: 0 0 20px;
+}
+
+.storeButton {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex: 1;
+	min-height: 42px;
+	padding: 10px 12px;
+	border-radius: 10px;
+	background: #111827;
+	color: white;
+	font-size: 0.85rem;
+	font-weight: 700;
+	text-align: center;
+	text-decoration: none;
+}
+
+.storeButton:hover {
+	background: #374151;
+}
+
 .getAppButtonBottom {
 	margin: 22px 0 0;
 }
 
 @media (max-width: 420px) {
+	.detailsWrapper {
+		max-width: 480px;
+	}
+	.detailsCard > .detailsGrid {
+		grid-template-columns: 1fr;
+		column-gap: 0;
+	}
 	.card {
 		padding: 28px 16px 18px;
 		border-radius: 10px;

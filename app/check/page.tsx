@@ -7,6 +7,8 @@ import Link from "next/link"
 import styles from "./styles.module.css"
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000"
+const PLAY_STORE_URL = process.env.NEXT_PUBLIC_PLAY_STORE_URL ?? "/"
+const APP_STORE_URL = process.env.NEXT_PUBLIC_APP_STORE_URL ?? "/"
 
 type PackageDetails = {
 	package_id: number
@@ -34,6 +36,15 @@ type PackageDetails = {
 	cancelled_at: string | null
 	is_delivered: boolean
 	delivered_at: string | null
+}
+
+type InvoiceDetails = {
+	package_id: number
+	invoice_id: number
+	is_paid: boolean
+	is_pay_forward: boolean
+	invoice_amount: string
+	invoice_amount_zig: string
 }
 
 type Step = "digits" | "otp" | "details"
@@ -68,6 +79,14 @@ function getInitiatorMessage(data: PackageDetails, statusLabel: string): string 
 	return null
 }
 
+function isCurrentUserPayer(packageData: PackageDetails, invoice: InvoiceDetails): boolean {
+	const initiatorId = String(packageData.initiator_id)
+	const isSenderInitiator = initiatorId === String(packageData.sender_id)
+	const isReceiverInitiator = initiatorId === String(packageData.receiver_id)
+
+	return (isSenderInitiator && invoice.is_pay_forward) || (isReceiverInitiator && !invoice.is_pay_forward)
+}
+
 function CheckPageContent() {
 	const searchParams = useSearchParams()
 	const packageId = searchParams.get("p")
@@ -77,6 +96,7 @@ function CheckPageContent() {
 	const [otp, setOtp] = useState("")
 	const [phoneNumber, setPhoneNumber] = useState<string | null>(null)
 	const [packageDetails, setPackageDetails] = useState<PackageDetails | null>(null)
+	const [invoiceDetails, setInvoiceDetails] = useState<InvoiceDetails | null>(null)
 	const [error, setError] = useState<string | null>(null)
 	const [info, setInfo] = useState<string | null>(null)
 	const [isSubmitting, setIsSubmitting] = useState(false)
@@ -163,25 +183,37 @@ function CheckPageContent() {
 		}
 
 		try {
-			const response = await fetch(
-				`${API_BASE}/api/intracity/package/?package_id=${encodeURIComponent(packageId)}`,
-				{
+			const headers = {
+				Accept: "application/json",
+				Authorization: `Bearer ${token}`,
+			}
+			const encodedPackageId = encodeURIComponent(packageId)
+			const [packageResponse, invoiceResponse] = await Promise.all([
+				fetch(`${API_BASE}/api/intracity/package/?package_id=${encodedPackageId}`, {
 					method: "GET",
-					headers: {
-						Accept: "application/json",
-						Authorization: `Bearer ${token}`,
-					},
-				}
-			)
+					headers,
+				}),
+				fetch(`${API_BASE}/api/intracity/invoice-details/?package_id=${encodedPackageId}`, {
+					method: "GET",
+					headers,
+				}),
+			])
 
-			const data = await response.json().catch(() => null)
+			const packageData = await packageResponse.json().catch(() => null)
+			const invoiceData = await invoiceResponse.json().catch(() => null)
 
-			if (!response.ok) {
-				setError(data?.detail || data?.error || "Could not find that package.")
+			if (!packageResponse.ok) {
+				setError(packageData?.detail || packageData?.error || "Could not find that package.")
 				return
 			}
 
-			setPackageDetails(data)
+			if (!invoiceResponse.ok) {
+				setError(invoiceData?.detail || invoiceData?.error || "Could not load invoice details.")
+				return
+			}
+
+			setPackageDetails(packageData)
+			setInvoiceDetails(invoiceData)
 			setStep("details")
 		} catch {
 			setError("Connection failed. Please check your network.")
@@ -203,9 +235,9 @@ function CheckPageContent() {
 
 	return (
 		<main className={styles.container}>
-			<div className={styles.cardWrapper}>
+			<div className={`${styles.cardWrapper} ${step === "details" ? styles.detailsWrapper : ""}`}>
 				<div className={styles.brand}>
-					<Image src="/movo-logo.svg" alt="MOVO" width={180} height={44} className={styles.brandLogo} priority />
+					<Image src="/movo_logo.png" alt="MOVO" width={180} height={44} className={styles.brandLogo} priority />
 				</div>
 
 				<div className={styles.card}>
@@ -298,9 +330,14 @@ function CheckPageContent() {
 								Home
 							</Link>
 
-							<Link href="/" className={styles.getAppButton}>
-								Get the MOVO App
-							</Link>
+							<div className={styles.storeButtons}>
+								<a href={PLAY_STORE_URL} className={styles.storeButton}>
+									Get on Google Play
+								</a>
+								<a href={APP_STORE_URL} className={styles.storeButton}>
+									Get on the App Store
+								</a>
+							</div>
 
 							<h1 className={styles.title}>Package #{packageDetails.package_id}</h1>
 							<p className={styles.subtitle}>{packageDetails.slug}</p>
@@ -315,6 +352,42 @@ function CheckPageContent() {
 									</>
 								)
 							})()}
+
+							{invoiceDetails ? (
+								<div className={styles.invoiceSummary}>
+									<h2 className={styles.invoiceTitle}>Payment</h2>
+									<div className={styles.payerMessage}>
+										{isCurrentUserPayer(packageDetails, invoiceDetails)
+											? "You are responsible for paying this package."
+											: "You are not responsible for paying this package."}
+									</div>
+									<div className={styles.detailsGrid}>
+										<div className={styles.detailRow}>
+											<span className={styles.detailLabel}>Payment status</span>
+											<span className={styles.detailValue}>{invoiceDetails.is_paid ? "Paid" : "Unpaid"}</span>
+										</div>
+										<div className={styles.detailRow}>
+											<span className={styles.detailLabel}>Invoice</span>
+											<span className={styles.detailValue}>#{invoiceDetails.invoice_id}</span>
+										</div>
+										<div className={styles.detailRow}>
+											<span className={styles.detailLabel}>Amount</span>
+											<span className={styles.detailValue}>
+												${invoiceDetails.invoice_amount} (ZiG {invoiceDetails.invoice_amount_zig})
+											</span>
+										</div>
+										<div className={styles.detailRow}>
+											<span className={styles.detailLabel}>Payment arrangement</span>
+											<span className={styles.detailValue}>
+												{invoiceDetails.is_pay_forward ? "Pay forward" : "Pay on collection"}
+											</span>
+										</div>
+                                        <div className={styles.detailRow}>
+											<span className={styles.detailLabel}>Get the Movo app to pay online or pay with cash when the driver arrives</span>
+										</div>
+									</div>
+								</div>
+							) : null}
 
 							<div className={styles.detailsGrid}>
 								<div className={styles.detailRow}>
