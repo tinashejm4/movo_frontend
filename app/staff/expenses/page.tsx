@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation'
 import staffStyles from '../styles.module.css'
 import styles from './styles.module.css'
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:8000'
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000"
 
 type Account = {
   id: number

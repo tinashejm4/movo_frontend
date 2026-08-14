@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   title: "Movo: Send packages securely",
   description: "Movo: Send packages securely",
   icons: {
-    icon: "/movo_icon.jpeg",
+    icon: "/movo_icon.png",
   },
 };
 

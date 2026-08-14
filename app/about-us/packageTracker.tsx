@@ -18,8 +18,7 @@ type PackageStatusResponse = {
   delivered_at: string | null;
 };
 
-const DEFAULT_API_BASE = "https://movobackend01-ccehf3gqbedmg6ax.southafricanorth-01.azurewebsites.net";
-const API_BASE = (process.env.NEXT_PUBLIC_API_BASE_URL ?? DEFAULT_API_BASE).replace(/\/+$/, "");
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
 const TRACKING_PATHS = ["/api/intracity/package-status/"];
 const TRACKING_QUERY_KEYS = ["package_slug"];
 
