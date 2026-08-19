@@ -13,8 +13,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Movo: Send packages securely",
-  description: "Movo: Send packages securely",
+  title: {
+    default: "Movo: Send packages securely",
+    template: "%s | Movo",
+  },
+  description: "Zimbabwean package delivery service.",
   icons: {
     icon: "/movo_icon.png",
   },

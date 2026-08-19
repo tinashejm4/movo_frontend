@@ -137,7 +137,7 @@ function CheckPageContent() {
 			setResendCooldown(30)
 			setStep("otp")
 		} catch {
-			setError("Connection failed. Please check your network.")
+			setError(`Connection failed. Please check your network. API_BASE: ${API_BASE}`)
 		} finally {
 			setIsSubmitting(false)
 		}
@@ -170,7 +170,7 @@ function CheckPageContent() {
 
 			await fetchPackage(token)
 		} catch {
-			setError("Connection failed. Please check your network.")
+			setError(`Connection failed. Please check your network. API_BASE: ${API_BASE}`)
 		} finally {
 			setIsSubmitting(false)
 		}
@@ -216,7 +216,7 @@ function CheckPageContent() {
 			setInvoiceDetails(invoiceData)
 			setStep("details")
 		} catch {
-			setError("Connection failed. Please check your network.")
+			setError(`Connection failed. Please check your network. API_BASE: ${API_BASE}`)
 		}
 	}
 
