@@ -1,0 +1,11 @@
+.page { min-height: 100vh; padding: 40px clamp(20px, 5vw, 72px); background: #f8fafc; color: #0f172a; }
+.header { margin-bottom: 32px; }
+.backLink { display: inline-block; margin-bottom: 28px; color: #c2410c; font-size: 0.9rem; font-weight: 700; text-decoration: none; }
+.backLink:hover { text-decoration: underline; }
+.eyebrow { margin: 0 0 6px; color: #64748b; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; }
+.page h1, .page h2 { margin: 0; }
+.page h1 { font-size: 2rem; }
+.intro { margin: 8px 0 0; color: #64748b; }
+.panel { padding: clamp(20px, 3vw, 32px); border: 1px solid #e2e8f0; border-radius: 8px; background: #ffffff; }
+.panel h2 { margin-bottom: 10px; font-size: 1.2rem; }
+.panel p { margin: 0; color: #64748b; }

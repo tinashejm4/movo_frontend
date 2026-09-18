@@ -1,0 +1,464 @@
+:root {
+  --about-ink: #171a24;
+  --about-muted: #556075;
+  --about-border: #e7ebf2;
+  --about-bg: #f6f8fb;
+  --about-surface: #ffffff;
+  --about-accent: #e85b00;
+  --about-accent-dark: #b94500;
+}
+
+.page {
+  min-height: 100vh;
+  padding: 36px 20px 54px;
+  color: var(--about-ink);
+  background:
+    radial-gradient(circle at 8% 4%, rgba(232, 91, 0, 0.09), transparent 35%),
+    radial-gradient(circle at 92% 18%, rgba(23, 26, 36, 0.05), transparent 28%),
+    var(--about-bg);
+}
+
+.container {
+  max-width: 980px;
+  margin: 0 auto;
+  background: var(--about-surface);
+  border: 1px solid var(--about-border);
+  border-radius: 24px;
+  padding: 28px;
+  box-shadow: 0 20px 44px rgba(15, 23, 42, 0.08);
+}
+
+.header {
+  border-bottom: 1px solid var(--about-border);
+  padding-bottom: 18px;
+}
+
+.eyebrow {
+  margin: 0;
+  color: var(--about-accent-dark);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 800;
+}
+
+.header h1 {
+  margin: 8px 0 10px;
+  font-size: clamp(1.8rem, 4.5vw, 2.8rem);
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+}
+
+.lead {
+  margin: 0;
+  max-width: 760px;
+  color: var(--about-muted);
+  line-height: 1.65;
+}
+
+.backLink {
+  display: inline-flex;
+  margin-top: 16px;
+  text-decoration: none;
+  color: var(--about-accent);
+  font-weight: 700;
+  border: 1px solid rgba(232, 91, 0, 0.26);
+  border-radius: 999px;
+  padding: 8px 14px;
+}
+
+.backLink:hover {
+  background: #fff3ea;
+}
+
+.section {
+  margin-top: 22px;
+}
+
+.section h2 {
+  margin: 0 0 8px;
+  font-size: 1.18rem;
+  color: #10131d;
+}
+
+.section p {
+  margin: 0;
+  color: var(--about-muted);
+  line-height: 1.7;
+}
+
+.trackerCard {
+  margin-top: 16px;
+  border: 1px solid #dbe3ef;
+  border-radius: 16px;
+  background: linear-gradient(155deg, #ffffff, #f8fbff);
+  padding: 14px;
+}
+
+.trackerHeading {
+  margin: 0;
+  font-size: 1rem;
+  color: #0f172a;
+}
+
+.trackerCard .trackerSubcopy {
+  margin-top: 6px;
+  font-size: 0.92rem;
+  color: #3d4a5f;
+}
+
+.trackerForm {
+  margin-top: 12px;
+}
+
+.trackerLabel {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: #2b3140;
+}
+
+.trackerInputRow {
+  display: flex;
+  gap: 8px;
+}
+
+.trackerInput {
+  flex: 1;
+  min-height: 40px;
+  border-radius: 10px;
+  border: 1px solid #cfd8e7;
+  padding: 0 12px;
+  font-size: 0.92rem;
+  color: #101827;
+  outline: none;
+  background: #ffffff;
+}
+
+.trackerInput:focus {
+  border-color: #e85b00;
+  box-shadow: 0 0 0 3px rgba(232, 91, 0, 0.14);
+}
+
+.trackerButton {
+  min-height: 40px;
+  border: none;
+  border-radius: 10px;
+  padding: 0 14px;
+  background: #e85b00;
+  color: #ffffff;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.trackerButton:hover {
+  background: #c34d00;
+}
+
+.trackerButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.72;
+}
+
+.trackerCard .trackerError {
+  margin-top: 8px;
+  color: #b42318;
+  font-weight: 700;
+  font-size: 0.86rem;
+}
+
+.trackerMeta {
+  margin-top: 10px;
+  display: grid;
+  gap: 4px;
+}
+
+.trackerCard .trackerMeta p {
+  margin: 0;
+  color: #2f3b4d;
+  font-size: 0.9rem;
+}
+
+.statusRail {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.statusStep {
+  position: relative;
+  border-radius: 12px;
+  border: 1px solid #d6deec;
+  padding: 10px 8px;
+  background: #f7faff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  overflow: hidden;
+}
+
+.statusStepDot {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  background: #9aa8bd;
+}
+
+.statusStepText {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #4b5563;
+  text-align: center;
+}
+
+.statusStepDone {
+  background: #fff3ea;
+  border-color: rgba(232, 91, 0, 0.28);
+}
+
+.statusStepDone .statusStepDot {
+  background: #d45500;
+}
+
+.statusStepDone .statusStepText {
+  color: #8f3900;
+}
+
+.statusStepActive {
+  border-color: rgba(232, 91, 0, 0.58);
+  background: linear-gradient(150deg, #fff0e4, #fff9f5);
+}
+
+.statusStepActive .statusStepDot {
+  background: #e85b00;
+}
+
+.statusStepActive .statusStepText {
+  color: #8f3900;
+}
+
+.statusStepUpcoming {
+  opacity: 0.9;
+}
+
+
+.chipList {
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chipList li {
+  border: 1px solid rgba(232, 91, 0, 0.26);
+  background: #fff6f0;
+  color: #833000;
+  border-radius: 999px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  padding: 7px 12px;
+}
+
+.teamGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.teamCard {
+  border: 1px solid var(--about-border);
+  border-radius: 16px;
+  padding: 14px;
+  background: #fcfdff;
+}
+
+.teamCard h3 {
+  margin: 0 0 8px;
+  font-size: 0.97rem;
+}
+
+.teamCard p {
+  font-size: 0.93rem;
+}
+
+.timeline {
+  margin: 0;
+  padding: 8px 0 0;
+  list-style: none;
+  display: grid;
+  gap: 14px;
+  position: relative;
+}
+
+.timeline::before {
+  content: "";
+  position: absolute;
+  left: 14px;
+  top: 10px;
+  bottom: 10px;
+  width: 2px;
+  background: linear-gradient(180deg, rgba(232, 91, 0, 0.42), rgba(148, 163, 184, 0.45));
+}
+
+.timelineItem {
+  position: relative;
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.timelineDot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  margin-top: 12px;
+  margin-left: 7px;
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 0 1px rgba(148, 163, 184, 0.42);
+  z-index: 1;
+}
+
+.dotMet {
+  background: #e85b00;
+}
+
+.dotUpcoming {
+  background: #94a3b8;
+}
+
+.timelineCard {
+  border: 1px solid var(--about-border);
+  border-radius: 14px;
+  background: #fcfdff;
+  padding: 12px 14px;
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.05);
+}
+
+.timelineHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.timelinePeriod {
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #6b7280;
+}
+
+.timelineBadge {
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.badgeMet {
+  background: #fff1e8;
+  color: #b94500;
+  border: 1px solid rgba(232, 91, 0, 0.3);
+}
+
+.badgeUpcoming {
+  background: #f2f5fa;
+  color: #4b5563;
+  border: 1px solid #d9e0ea;
+}
+
+.timelineCard h3 {
+  margin: 0 0 6px;
+  font-size: 1rem;
+  color: #111827;
+}
+
+.timelineCard p {
+  margin: 0;
+  color: var(--about-muted);
+  line-height: 1.6;
+  font-size: 0.93rem;
+}
+
+.ctaSection {
+  margin-top: 26px;
+  border-top: 1px solid var(--about-border);
+  padding-top: 20px;
+}
+
+.ctaRow {
+  margin-top: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.primaryCta,
+.secondaryCta {
+  text-decoration: none;
+  border-radius: 12px;
+  min-height: 42px;
+  padding: 10px 16px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+}
+
+.primaryCta {
+  background: var(--about-accent);
+  color: #ffffff;
+}
+
+.secondaryCta {
+  background: #ffffff;
+  color: #2b3140;
+  border: 1px solid #d6dce8;
+}
+
+.primaryCta:hover {
+  background: var(--about-accent-dark);
+}
+
+.secondaryCta:hover {
+  background: #f8f9fc;
+}
+
+@media (max-width: 900px) {
+  .teamGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .page {
+    padding: 24px 14px 40px;
+  }
+
+  .container {
+    padding: 20px 16px;
+    border-radius: 16px;
+  }
+
+  .timelineHeader {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .trackerInputRow {
+    flex-direction: column;
+  }
+
+  .statusRail {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

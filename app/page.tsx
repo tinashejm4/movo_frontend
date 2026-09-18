@@ -3,7 +3,7 @@
 import { useEffect, useState, type FormEvent } from "react"
 import { Manrope, Space_Grotesk } from "next/font/google";
 import Image from "next/image";
-import PackageTracker from "./about-us/packageTracker";
+import PackageTracker from "./components/packageTracker/packageTracker";
 import styles from "./home.module.css";
 
 const manrope = Manrope({ subsets: ["latin"], weight: ["400", "500", "600", "700", "800"] });
@@ -89,11 +89,105 @@ type TrackingResult = {
   message?: string
 }
 
+type Suburb = {
+  id: number
+  name: string
+  city: number
+  city_name: string
+}
+
+type PackagePrice = {
+  city_id: number
+  distance_km: number
+  is_fast_delivery: boolean
+  amount: string
+}
+
+
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000"
 const WHATSAPP_URL = "https://wa.me/263000000000?text=Hi%20MOVO%2C%20I%20want%20to%20send%20a%20package."
 
 function displayValue(value?: string) {
   return value && value.trim().length > 0 ? value : "-"
+}
+
+type SuburbComboboxProps = {
+  id: string
+  label: string
+  suburbs: Suburb[]
+  loading: boolean
+  error: string
+  onSelect: (suburb: Suburb) => void
+}
+
+function SuburbCombobox({ id, label, suburbs, loading, error, onSelect }: SuburbComboboxProps) {
+  const [query, setQuery] = useState("")
+  const [selectedLabel, setSelectedLabel] = useState("")
+  const [open, setOpen] = useState(false)
+
+  const filtered = suburbs.filter((suburb) => {
+    const term = query.trim().toLowerCase()
+    if (!term) return true
+    return (
+      suburb.name.toLowerCase().includes(term) ||
+      suburb.city_name.toLowerCase().includes(term)
+    )
+  })
+
+  return (
+    <div className={styles.suburbField}>
+      <label htmlFor={id}>{label}</label>
+      <input
+        id={id}
+        type="text"
+        placeholder="Search suburb..."
+        value={query}
+        onChange={(event) => {
+          setQuery(event.target.value)
+          setOpen(true)
+        }}
+        onFocus={() => {
+          setQuery("")
+          setOpen(true)
+        }}
+        onBlur={() => {
+          setTimeout(() => {
+            setOpen(false)
+            setQuery(selectedLabel)
+          }, 150)
+        }}
+        autoComplete="off"
+      />
+      {open && (
+        <ul className={styles.suburbDropdown}>
+          {loading && <li className={styles.suburbEmpty}>Loading suburbs...</li>}
+          {!loading && error && <li className={styles.suburbEmpty}>{error}</li>}
+          {!loading && !error && filtered.length === 0 && (
+            <li className={styles.suburbEmpty}>No suburbs found</li>
+          )}
+          {!loading &&
+            !error &&
+            filtered.map((suburb) => (
+              <li key={suburb.id}>
+                <button
+                  type="button"
+                  onMouseDown={(event) => event.preventDefault()}
+                  onClick={() => {
+                    const nextLabel = `${suburb.name}, ${suburb.city_name}`
+                    onSelect(suburb)
+                    setSelectedLabel(nextLabel)
+                    setQuery(nextLabel)
+                    setOpen(false)
+                  }}
+                >
+                  {suburb.name} <span>{suburb.city_name}</span>
+                </button>
+              </li>
+            ))}
+        </ul>
+      )}
+    </div>
+  )
 }
 
 export default function Home() {
@@ -102,6 +196,87 @@ export default function Home() {
   const [trackingLoading, setTrackingLoading] = useState(false)
   const [trackingError, setTrackingError] = useState("")
   const [trackingResult, setTrackingResult] = useState<TrackingResult | null>(null)
+
+  const [suburbs, setSuburbs] = useState<Suburb[]>([])
+  const [suburbsLoading, setSuburbsLoading] = useState(false)
+  const [suburbsError, setSuburbsError] = useState("")
+  const [fromSuburb, setFromSuburb] = useState<Suburb | null>(null)
+  const [toSuburb, setToSuburb] = useState<Suburb | null>(null)
+  const [priceResult, setPriceResult] = useState<PackagePrice | null>(null)
+  const [priceLoading, setPriceLoading] = useState(false)
+  const [priceError, setPriceError] = useState("")
+
+  useEffect(() => {
+    let cancelled = false
+
+    const loadSuburbs = async () => {
+      setSuburbsLoading(true)
+      setSuburbsError("")
+
+      try {
+        const response = await fetch(`${API_BASE}/api/users/suburbs/`)
+        if (!response.ok) throw new Error("Failed to load suburbs")
+
+        const data = await response.json()
+        if (!cancelled) setSuburbs(Array.isArray(data) ? data : [])
+      } catch (error) {
+        if (!cancelled) {
+          setSuburbsError(error instanceof Error ? error.message : "Failed to load suburbs")
+        }
+      } finally {
+        if (!cancelled) setSuburbsLoading(false)
+      }
+    }
+
+    loadSuburbs()
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!fromSuburb || !toSuburb) {
+      setPriceResult(null)
+      setPriceError("")
+      return undefined
+    }
+
+    let cancelled = false
+
+    const lookupPrice = async () => {
+      setPriceLoading(true)
+      setPriceError("")
+      setPriceResult(null)
+
+      try {
+        const response = await fetch(`${API_BASE}/api/intracity/package-price/`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            city_id: fromSuburb.city,
+            from_suburb_id: fromSuburb.id,
+            to_suburb_id: toSuburb.id,
+            is_fast_delivery: false,
+          }),
+        })
+
+        const data = await response.json().catch(() => null)
+        if (!response.ok) throw new Error(data?.error || data?.detail || "Failed to fetch price. Check your internet.")
+        if (!cancelled) setPriceResult(data)
+      } catch (error) {
+        if (!cancelled) {
+          setPriceError(error instanceof Error ? error.message : "Failed to fetch price. Check your internet.")
+        }
+      } finally {
+        if (!cancelled) setPriceLoading(false)
+      }
+    }
+
+    lookupPrice()
+    return () => {
+      cancelled = true
+    }
+  }, [fromSuburb, toSuburb])
 
   useEffect(() => {
     if (!trackingOpen) return undefined
@@ -192,8 +367,8 @@ export default function Home() {
         </div>
         <nav className={styles.navLinks} aria-label="Primary">
           <a href="#services">Services</a>
-          <a href="#coverage">Coverage</a>
           <a href="#pricing">Pricing</a>
+          <a href="#coverage">Coverage</a>
           <a href="#security">Security</a>
         </nav>
         <div className={styles.navCtas}>
@@ -268,6 +443,38 @@ export default function Home() {
           </div>
         </section>
 
+        <section className={styles.priceLookupSection} id="price-lookup">
+          <p className={styles.priceLookupSubtitle}>Find out what it will cost to send your package</p>
+          <div className={styles.suburbSelectors}>
+            <SuburbCombobox
+              id="fromSuburb"
+              label="From Area"
+              suburbs={suburbs}
+              loading={suburbsLoading}
+              error={suburbsError}
+              onSelect={setFromSuburb}
+            />
+            <SuburbCombobox
+              id="toSuburb"
+              label="To Area"
+              suburbs={suburbs}
+              loading={suburbsLoading}
+              error={suburbsError}
+              onSelect={setToSuburb}
+            />
+          </div>
+          <div className={styles.priceDisplay}>
+            {priceLoading && <p className={styles.priceStatus}>Calculating price...</p>}
+            {!priceLoading && priceError && <p className={styles.priceStatus}>{priceError}</p>}
+            {!priceLoading && !priceError && priceResult && (
+              <p className={styles.priceAmount}>${Number(priceResult.amount).toFixed(2)}</p>
+            )}
+            {!priceLoading && !priceError && !priceResult && (
+              <p className={styles.pricePlaceholder}>Select both suburbs to see the price</p>
+            )}
+          </div>
+        </section>
+
         <section className={`${styles.section} ${styles.valueSection}`} id="pricing">
           <div className={styles.valueCopy}>
             <h2 className={spaceGrotesk.className}>Unbeatable Value. No Hidden Fees.</h2>
@@ -290,7 +497,7 @@ export default function Home() {
             </div>
             <div className={styles.tableRow}>
               <span>Starting Price</span>
-              <span>$4.00 - $6.00</span>
+              <span>$3.00 - $6.00</span>
               <strong>$1.00</strong>
             </div>
             <div className={styles.tableRow}>
@@ -311,6 +518,8 @@ export default function Home() {
           </div>
         </section>
 
+
+
         <section className={`${styles.section} ${styles.coverageSection}`} id="coverage">
           <div className={styles.mapCard}>
             <div className={styles.mapMock}>
@@ -322,7 +531,7 @@ export default function Home() {
                 sizes="(max-width: 900px) 100vw, 50vw"
               />
             </div>
-            <div className={styles.reliabilityBadge}>99.8% Reliability</div>
+            <div className={styles.reliabilityBadge}>Extremely Reliable</div>
           </div>
 
           <div className={styles.coverageListWrap}>
@@ -338,9 +547,10 @@ export default function Home() {
           </div>
         </section>
 
+
         <section className={styles.securitySection} id="security">
           <h2 className={spaceGrotesk.className}>Absolute Security. Guaranteed.</h2>
-          <p>We don&apos;t just deliver packages; we protect your trust with military-grade protocols.</p>
+          <p>We deliver packages safely, on time, and at a fair price.</p>
           <div className={styles.securityGrid}>
             {securityLayers.map((layer) => (
               <article key={layer.title} className={styles.securityCard}>
@@ -350,6 +560,8 @@ export default function Home() {
             ))}
           </div>
         </section>
+
+
 
         <section className={styles.section}>
           <h2 className={spaceGrotesk.className}>Trusted by Harare&apos;s Leading Businesses. Join them.</h2>
