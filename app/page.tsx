@@ -104,7 +104,9 @@ type PackagePrice = {
 }
 
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000"
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL
+console.log("API_BASE:", API_BASE)
+// const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000"
 const WHATSAPP_URL = "https://wa.me/263000000000?text=Hi%20MOVO%2C%20I%20want%20to%20send%20a%20package."
 
 function displayValue(value?: string) {

@@ -1,128 +1,248 @@
 "use client"
 
-import { useEffect, useState, type FormEvent } from "react"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
-import styles from "./styles.module.css"
+  import { useEffect, useState } from "react"
+  import { useRouter } from "next/navigation"
+  import styles from "./styles.module.css"
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000"
+  const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000"
+  const POLL_INTERVAL = 30_000
 
-type MetricPoint = { date: string; value: number }
-type MetricKey = "delivery_orders_added" | "delivery_orders_assigned" | "delivery_orders_completed" | "delivery_orders_cancelled"
-type DeliveryMetrics = Record<MetricKey, MetricPoint[]>
-type ChartDay = { date: string } & Record<MetricKey, number>
+  type MainMetrics = {
+    new_customers: number
+    total_new_orders: number
+    delivered_orders: number
+    canceled_orders: number
+    in_transit_orders: number
+    assigned_orders: number
+  }
 
-const metricDefinitions: { key: MetricKey; label: string; color: string }[] = [
-  { key: "delivery_orders_added", label: "Added", color: "#2563eb" },
-  { key: "delivery_orders_assigned", label: "Assigned", color: "#f59e0b" },
-  { key: "delivery_orders_completed", label: "Completed", color: "#16a34a" },
-  { key: "delivery_orders_cancelled", label: "Cancelled", color: "#dc2626" },
-]
+  type BikerMetrics = {
+    biker_id: number
+    biker_name: string
+    is_active: boolean
+    is_busy: boolean
+    started_at: string | null
+    num_packages_assigned: number
+    num_packages_delivered: number
+  }
 
-function formatDate(date: Date) {
-  return date.toISOString().slice(0, 10)
-}
+  type PackageMetric = {
+    package_id: number
+    slug: string
+    pickup_area: string
+    dropoff_area: string
+    current_status: string | null
+    is_fast_delivery: boolean
+    invoice_amount: number | string | null
+  }
 
-function defaultStartDate() {
-  const date = new Date()
-  date.setDate(date.getDate() - 29)
-  return formatDate(date)
-}
+  type PackageDetails = {
+    package_id: number
+    slug: string
+    sender: string
+    sender_phone: string
+    receiver: string
+    receiver_phone: string
+    pickup_area: string
+    pickup_address: string
+    dropoff_area: string
+    dropoff_address: string
+    sender_code: string
+    receiver_code: string
+    comments: string | null
+    current_status: string | null
+    is_fast_delivery: boolean
+    payment_method: string | null
+    invoice_amount: number | string | null
+    is_paid: boolean | null
+    status_history: { status: string; updated_at: string }[]
+  }
 
-function buildChartDays(metrics: DeliveryMetrics): ChartDay[] {
-  const valuesByDate = new Map<string, ChartDay>()
+  const metricCards: { key: keyof MainMetrics; label: string }[] = [
+    { key: "new_customers", label: "New customers" },
+    { key: "total_new_orders", label: "New orders" },
+    { key: "delivered_orders", label: "Delivered" },
+    { key: "canceled_orders", label: "Canceled" },
+    { key: "in_transit_orders", label: "In transit" },
+    { key: "assigned_orders", label: "Assigned" },
+  ]
 
-  for (const definition of metricDefinitions) {
-    for (const point of metrics[definition.key]) {
-      const day = valuesByDate.get(point.date) ?? {
-        date: point.date,
-        delivery_orders_added: 0,
-        delivery_orders_assigned: 0,
-        delivery_orders_completed: 0,
-        delivery_orders_cancelled: 0,
+  async function fetchJson<T>(path: string, accessToken: string) {
+    const response = await fetch(`${API_BASE}${path}`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    })
+    const data = await response.json().catch(() => null)
+    if (!response.ok) throw new Error(data?.detail || data?.error || `Unable to load ${path}.`)
+    return data as T
+  }
+
+  function formatStartedAt(value: string | null) {
+    if (!value) return "Not started"
+    return new Date(value).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
+  }
+
+  function formatStatusTime(value: string) {
+    return new Date(value).toLocaleString([], { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" })
+  }
+
+  export default function AdminPage() {
+    const router = useRouter()
+    const [mainMetrics, setMainMetrics] = useState<MainMetrics | null>(null)
+    const [bikerMetrics, setBikerMetrics] = useState<BikerMetrics[]>([])
+    const [packages, setPackages] = useState<PackageMetric[]>([])
+    const [expandedPackageId, setExpandedPackageId] = useState<number | null>(null)
+    const [packageDetails, setPackageDetails] = useState<Record<number, PackageDetails>>({})
+    const [loadingPackageId, setLoadingPackageId] = useState<number | null>(null)
+    const [packageDetailsError, setPackageDetailsError] = useState("")
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState("")
+    const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
+
+    useEffect(() => {
+      if (!window.sessionStorage.getItem("movo_access_token")) router.replace("/adminportal/login")
+    }, [router])
+
+    useEffect(() => {
+      let isMounted = true
+
+      async function loadDashboard() {
+        const accessToken = window.sessionStorage.getItem("movo_access_token")
+        if (!accessToken) return
+
+        try {
+          const [mainData, bikerData, packageData] = await Promise.all([
+            fetchJson<MainMetrics>("/api/adminportal/main-metrics/", accessToken),
+            fetchJson<BikerMetrics[] | { bikers: BikerMetrics[] }>("/api/adminportal/bikers-metrics/", accessToken),
+            fetchJson<{ packages: PackageMetric[] }>("/api/adminportal/packages-list/", accessToken),
+          ])
+          if (!isMounted) return
+          setMainMetrics(mainData)
+          setBikerMetrics(Array.isArray(bikerData) ? bikerData : bikerData.bikers ?? [])
+          setPackages(Array.isArray(packageData.packages) ? packageData.packages : [])
+          setError("")
+          setLastUpdated(new Date())
+        } catch (loadError) {
+          if (isMounted) setError(loadError instanceof Error ? loadError.message : "Unable to load dashboard metrics.")
+        } finally {
+          if (isMounted) setLoading(false)
+        }
       }
-      day[definition.key] = Number(point.value) || 0
-      valuesByDate.set(point.date, day)
+
+      void loadDashboard()
+      const interval = window.setInterval(() => void loadDashboard(), POLL_INTERVAL)
+      return () => {
+        isMounted = false
+        window.clearInterval(interval)
+      }
+    }, [])
+
+    async function togglePackage(packageId: number) {
+      if (expandedPackageId === packageId) {
+        setExpandedPackageId(null)
+        setPackageDetailsError("")
+        return
+      }
+
+      setExpandedPackageId(packageId)
+      setPackageDetailsError("")
+      if (packageDetails[packageId]) return
+
+      const accessToken = window.sessionStorage.getItem("movo_access_token")
+      if (!accessToken) return
+
+      setLoadingPackageId(packageId)
+      try {
+        const response = await fetchJson<{ package: PackageDetails }>(`/api/adminportal/packages-details/?package_id=${packageId}`, accessToken)
+        setPackageDetails((current) => ({ ...current, [packageId]: response.package }))
+      } catch (loadError) {
+        setPackageDetailsError(loadError instanceof Error ? loadError.message : "Unable to load package details.")
+      } finally {
+        setLoadingPackageId(null)
+      }
     }
+
+    return (
+      <main className={styles.page}>
+        <header className={styles.header}>
+          <div>
+            <p className={styles.eyebrow}>Movo administration</p>
+            <h1>Live dashboard</h1>
+            <p className={styles.intro}>Today&apos;s delivery activity at a glance.</p>
+          </div>
+          {lastUpdated && <p className={styles.updated}>Updated {lastUpdated.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}</p>}
+        </header>
+
+        {error && <p className={styles.error} role="alert">{error}</p>}
+
+        <section className={styles.section} aria-labelledby="main-metrics-heading">
+          <div className={styles.sectionHeader}>
+            <div><p className={styles.sectionLabel}>Today</p><h2 id="main-metrics-heading">Main metrics</h2></div>
+            {loading && <span className={styles.loading}>Loading...</span>}
+          </div>
+          <div className={styles.metricGrid}>
+            {metricCards.map((metric) => <article className={styles.metricCard} key={metric.key}>
+              <p>{metric.label}</p>
+              <strong>{mainMetrics?.[metric.key] ?? "-"}</strong>
+            </article>)}
+          </div>
+        </section>
+
+        <section className={styles.section} aria-labelledby="biker-metrics-heading">
+          <div className={styles.sectionHeader}><div><p className={styles.sectionLabel}>Delivery team</p><h2 id="biker-metrics-heading">Biker metrics</h2></div><span className={styles.count}>{bikerMetrics.length} bikers</span></div>
+          {!loading && bikerMetrics.length === 0 && !error && <p className={styles.empty}>No biker metrics available.</p>}
+          <div className={styles.bikerGrid}>
+            {bikerMetrics.map((biker) => <article className={styles.bikerCard} key={biker.biker_id}>
+              <div className={styles.bikerHeader}><div><h3>{biker.biker_name || "Unnamed biker"}</h3><p className={styles.startedAt}>Started {formatStartedAt(biker.started_at)}</p></div><span className={`${styles.statusBadge} ${biker.is_active ? styles.active : styles.offline}`}>{biker.is_active ? "Active" : "Offline"}</span></div>
+              <div className={styles.bikerStatus}><span className={biker.is_busy ? styles.busyDot : styles.readyDot} />{biker.is_busy ? "On delivery" : "Available"}</div>
+              <dl className={styles.bikerStats}><div><dt>Assigned today</dt><dd>{biker.num_packages_assigned}</dd></div><div><dt>Delivered today</dt><dd>{biker.num_packages_delivered}</dd></div></dl>
+            </article>)}
+          </div>
+        </section>
+
+        <section className={styles.section} aria-labelledby="packages-heading">
+          <div className={styles.sectionHeader}><div><p className={styles.sectionLabel}>Today</p><h2 id="packages-heading">Packages</h2></div><span className={styles.count}>{packages.length} packages</span></div>
+          {!loading && packages.length === 0 && !error && <p className={styles.empty}>No packages found today.</p>}
+          {packages.length > 0 && <div className={styles.packageList}>
+            {packages.map((packageItem) => {
+              const isExpanded = expandedPackageId === packageItem.package_id
+              const details = packageDetails[packageItem.package_id]
+              return <article className={styles.packageRow} key={packageItem.package_id}>
+                <div className={styles.packageMain}>
+                  <div className={styles.packageIdentity}>
+                    <div><strong>{packageItem.slug || `Package #${packageItem.package_id}`}</strong><span>#{packageItem.package_id}</span></div>
+                    <div className={styles.packageMeta}><span>{packageItem.is_fast_delivery ? "Fast delivery" : "Standard delivery"}</span><span>{packageItem.invoice_amount === null ? "No invoice" : `Invoice: ${packageItem.invoice_amount}`}</span></div>
+                  </div>
+                  <div className={styles.route}><span>{packageItem.pickup_area}</span><span className={styles.routeArrow} aria-hidden="true">&gt;</span><span>{packageItem.dropoff_area}</span></div>
+                  <span className={styles.packageStatus}>{packageItem.current_status || "No status"}</span>
+                  <button type="button" className={`${styles.packageToggle} ${isExpanded ? styles.packageToggleExpanded : ""}`} onClick={() => void togglePackage(packageItem.package_id)} aria-expanded={isExpanded} aria-controls={`package-details-${packageItem.package_id}`} aria-label={`${isExpanded ? "Hide" : "Show"} details for ${packageItem.slug || `package ${packageItem.package_id}`}`}>
+                    &gt;
+                  </button>
+                </div>
+                {isExpanded && <div className={styles.packageDetails} id={`package-details-${packageItem.package_id}`}>
+                  {loadingPackageId === packageItem.package_id && <p className={styles.detailLoading}>Loading package details...</p>}
+                  {packageDetailsError && <p className={styles.detailError} role="alert">{packageDetailsError}</p>}
+                  {details && <dl className={styles.packageDetailGrid}>
+                    <div><dt>Sender</dt><dd>{details.sender} ({details.sender_phone})</dd></div>
+                    <div><dt>Receiver</dt><dd>{details.receiver} ({details.receiver_phone})</dd></div>
+                    <div><dt>Pickup</dt><dd>{details.pickup_area}, {details.pickup_address}</dd></div>
+                    <div><dt>Dropoff</dt><dd>{details.dropoff_area}, {details.dropoff_address}</dd></div>
+                    <div><dt>Payment</dt><dd>{details.payment_method || "Not provided"}{details.is_paid === true ? " - Paid" : details.is_paid === false ? " - Unpaid" : ""}</dd></div>
+                    <div><dt>Comments</dt><dd>{details.comments || "None"}</dd></div>
+                  </dl>}
+                  {details && <div className={styles.statusHistory}>
+                    <h4>Status history</h4>
+                    {details.status_history.length > 0 ? <ol className={styles.statusTimeline}>
+                      {details.status_history.slice().reverse().map((historyItem, index, timeline) => <li className={styles.statusTimelineItem} key={`${historyItem.status}-${historyItem.updated_at}`}>
+                        <span className={`${styles.statusTimelineDot} ${index === timeline.length - 1 ? styles.currentStatusDot : ""}`} aria-hidden="true" />
+                        <div><strong>{historyItem.status}</strong><time dateTime={historyItem.updated_at}>{formatStatusTime(historyItem.updated_at)}</time></div>
+                      </li>)}
+                    </ol> : <p className={styles.noStatusHistory}>No status history available.</p>}
+                  </div>}
+                </div>}
+              </article>
+            })}
+          </div>}
+        </section>
+      </main>
+    )
   }
-
-  return Array.from(valuesByDate.values()).sort((first, second) => first.date.localeCompare(second.date))
-}
-
-export default function AdminPage() {
-  const router = useRouter()
-  const [startDate, setStartDate] = useState(defaultStartDate)
-  const [endDate, setEndDate] = useState(() => formatDate(new Date()))
-  const [metrics, setMetrics] = useState<DeliveryMetrics | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState("")
-
-  useEffect(() => {
-    if (!window.sessionStorage.getItem("movo_access_token")) router.replace("/adminportal/login")
-  }, [router])
-
-  async function loadMetrics() {
-    const accessToken = window.sessionStorage.getItem("movo_access_token")
-    if (!accessToken) return
-
-    setLoading(true)
-    setError("")
-    try {
-      const query = new URLSearchParams({ start_date: startDate, end_date: endDate })
-      const response = await fetch(`${API_BASE}/api/adminportal/delivery_metrics?${query}`, {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      })
-      const data = await response.json().catch(() => null)
-      console.log(data)
-      if (!response.ok) throw new Error(data?.detail || data?.error || "Unable to load delivery metrics.")
-        
-      setMetrics({
-        delivery_orders_added: Array.isArray(data?.delivery_orders_added) ? data.delivery_orders_added : [],
-        delivery_orders_assigned: Array.isArray(data?.delivery_orders_assigned) ? data.delivery_orders_assigned : [],
-        delivery_orders_completed: Array.isArray(data?.delivery_orders_completed) ? data.delivery_orders_completed : [],
-        delivery_orders_cancelled: Array.isArray(data?.delivery_orders_cancelled) ? data.delivery_orders_cancelled : [],
-      })
-    } catch (loadError) {
-      setError(loadError instanceof Error ? loadError.message : "Unable to load delivery metrics.")
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => { void loadMetrics() }, [])
-
-  function handleFilterSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    void loadMetrics()
-  }
-
-  const chartDays = metrics ? buildChartDays(metrics) : []
-  const largestTotal = Math.max(1, ...chartDays.map((day) => metricDefinitions.reduce((total, definition) => total + day[definition.key], 0)))
-
-  return (
-    <main className={styles.page}>
-      <header className={styles.header}>
-        <div><p className={styles.eyebrow}>Movo administration</p><h1>Delivery metrics</h1><div><Link href="/admin/suburbs">Manage suburbs</Link> <Link href="/admin/bikers">Manage bikers</Link></div></div>
-        <form className={styles.filters} onSubmit={handleFilterSubmit}>
-          <label>Start date<input type="date" value={startDate} max={endDate} onChange={(event) => setStartDate(event.target.value)} required /></label>
-          <label>End date<input type="date" value={endDate} min={startDate} max={formatDate(new Date())} onChange={(event) => setEndDate(event.target.value)} required /></label>
-          <button type="submit" disabled={loading}>Apply</button>
-        </form>
-      </header>
-      <section className={styles.chartPanel} aria-labelledby="delivery-chart-heading">
-        <div className={styles.chartHeader}>
-          <h2 id="delivery-chart-heading">Orders by day</h2>
-          <div className={styles.legend}>{metricDefinitions.map((definition) => <span key={definition.key}><i style={{ backgroundColor: definition.color }} />{definition.label}</span>)}</div>
-        </div>
-        {loading && <p className={styles.status}>Loading delivery metrics...</p>}
-        {!loading && error && <p className={`${styles.status} ${styles.error}`} role="alert">{error}</p>}
-        {!loading && !error && chartDays.length === 0 && <p className={styles.status}>No delivery orders found for this date range.</p>}
-        {!loading && !error && chartDays.length > 0 && <div className={styles.chartScroll}><div className={styles.chart} style={{ minWidth: `${Math.max(620, chartDays.length * 44)}px` }}>
-          {chartDays.map((day) => <div className={styles.barColumn} key={day.date}><div className={styles.bar}>
-            {metricDefinitions.map((definition) => day[definition.key] > 0 && <span key={definition.key} title={`${definition.label}: ${day[definition.key]}`} style={{ height: `${(day[definition.key] / largestTotal) * 100}%`, backgroundColor: definition.color }} />)}
-          </div><time dateTime={day.date}>{day.date.slice(5)}</time></div>)}
-        </div></div>}
-      </section>
-    </main>
-  )
-}
