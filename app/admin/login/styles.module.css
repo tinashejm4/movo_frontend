@@ -21,7 +21,7 @@
   font-size: 1.5rem;
 }
 
-.card > p {
+.card > p:not(.error) {
   margin: 8px 0 24px;
   color: #64748b;
 }

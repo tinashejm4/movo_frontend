@@ -74,7 +74,7 @@ function inferStepIndex(data: PackageStatusResponse): number {
 }
 
 export default function PackageTracker() {
-  const [packageSlug, setPackageSlug] = useState("mov-da3a87cf5499");
+  const [packageSlug, setPackageSlug] = useState("mov-c5af618acee4");
   const [trackingData, setTrackingData] = useState<PackageStatusResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

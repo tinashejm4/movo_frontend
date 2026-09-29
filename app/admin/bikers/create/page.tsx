@@ -50,7 +50,7 @@ export default function CreateBikerPage() {
   const [error, setError] = useState("")
 
   useEffect(() => {
-    if (!window.sessionStorage.getItem("movo_access_token")) router.replace("/adminportal/login")
+    if (!window.sessionStorage.getItem("movo_access_token")) router.replace("/admin/login")
   }, [router])
 
   useEffect(() => {
