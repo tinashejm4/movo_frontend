@@ -9,6 +9,7 @@ const navigationItems = [
   { href: "/admin/suburbs", label: "Suburbs", exact: false },
   { href: "/admin/bikers", label: "Bikers", exact: false },
   { href: "/admin/customers", label: "Customers", exact: false },
+  { href: "/admin/accounts", label: "Accounts", exact: false },
 ]
 
 export function AdminTopRail() {
